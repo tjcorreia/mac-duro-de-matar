@@ -1,7 +1,5 @@
-import CoreGraphics
 import CoreImage
 import CoreImage.CIFilterBuiltins
-import CoreText
 import Foundation
 import ImageIO
 import UniformTypeIdentifiers
@@ -84,58 +82,142 @@ guard let qrCGImage = CGImage(
     exit(1)
 }
 
-let labelFontSize: CGFloat = 20
-let padding: CGFloat = 12
-let labelHeight: CGFloat = 28
-let canvasWidth = CGFloat(qrWidth)
-let canvasHeight = CGFloat(qrHeight) + labelHeight + padding
-let bytesPerRow = Int(canvasWidth) * 4
+let padding = 12
+let labelHeight = 32
+let canvasWidth = qrWidth
+let canvasHeight = qrHeight + labelHeight + padding
+var canvasPixels = [UInt8](repeating: 255, count: canvasWidth * canvasHeight * 4)
 
-guard let bitmapContext = CGContext(
-    data: nil,
-    width: Int(canvasWidth),
-    height: Int(canvasHeight),
-    bitsPerComponent: 8,
-    bytesPerRow: bytesPerRow,
-    space: colorSpace,
-    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-) else {
-    fputs("Falha a criar o contexto final do QR code.\n", stderr)
+func setPixel(_ pixels: inout [UInt8], width: Int, x: Int, y: Int, r: UInt8, g: UInt8, b: UInt8, a: UInt8 = 255) {
+    guard x >= 0, y >= 0, x < width else { return }
+    let index = (y * width + x) * 4
+    guard index + 3 < pixels.count else { return }
+    pixels[index] = r
+    pixels[index + 1] = g
+    pixels[index + 2] = b
+    pixels[index + 3] = a
+}
+
+for y in 0..<qrHeight {
+    for x in 0..<qrWidth {
+        let src = (y * qrWidth + x) * 4
+        let dstY = y + labelHeight + padding
+        let dst = (dstY * canvasWidth + x) * 4
+        canvasPixels[dst] = pixels[src]
+        canvasPixels[dst + 1] = pixels[src + 1]
+        canvasPixels[dst + 2] = pixels[src + 2]
+        canvasPixels[dst + 3] = 255
+    }
+}
+
+let labelBoxWidth = 76
+let labelBoxHeight = 22
+let labelBoxX = canvasWidth - labelBoxWidth - 10
+let labelBoxY = 6
+
+for y in labelBoxY..<(labelBoxY + labelBoxHeight) {
+    for x in labelBoxX..<(labelBoxX + labelBoxWidth) {
+        setPixel(&canvasPixels, width: canvasWidth, x: x, y: y, r: 20, g: 20, b: 20)
+    }
+}
+
+let glyphs: [Character: [String]] = [
+    "M": [
+        "10001",
+        "11011",
+        "10101",
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+    ],
+    "A": [
+        "01110",
+        "10001",
+        "10001",
+        "11111",
+        "10001",
+        "10001",
+        "10001",
+    ],
+    "C": [
+        "01111",
+        "10000",
+        "10000",
+        "10000",
+        "10000",
+        "10000",
+        "01111",
+    ],
+    "-": [
+        "00000",
+        "00000",
+        "11111",
+        "00000",
+        "00000",
+        "00000",
+        "00000",
+    ],
+    "D": [
+        "11110",
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "11110",
+    ],
+]
+
+let scaleFactor = 2
+var cursorX = labelBoxX + 8
+let cursorY = labelBoxY + 4
+
+for character in label {
+    guard let glyph = glyphs[character] else {
+        cursorX += 8
+        continue
+    }
+
+    for (rowIndex, row) in glyph.enumerated() {
+        for (colIndex, bit) in row.enumerated() where bit == "1" {
+            for dy in 0..<scaleFactor {
+                for dx in 0..<scaleFactor {
+                    setPixel(
+                        &canvasPixels,
+                        width: canvasWidth,
+                        x: cursorX + colIndex * scaleFactor + dx,
+                        y: cursorY + rowIndex * scaleFactor + dy,
+                        r: 255,
+                        g: 255,
+                        b: 255
+                    )
+                }
+            }
+        }
+    }
+
+    cursorX += 5 * scaleFactor + 2
+}
+
+guard let finalProvider = CGDataProvider(data: Data(canvasPixels) as CFData) else {
+    fputs("Falha a criar o data provider final do QR code.\n", stderr)
     exit(1)
 }
 
-bitmapContext.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
-bitmapContext.fill(CGRect(x: 0, y: 0, width: canvasWidth, height: canvasHeight))
-bitmapContext.draw(qrCGImage, in: CGRect(x: 0, y: labelHeight + padding, width: canvasWidth, height: CGFloat(qrHeight)))
-
-let labelRect = CGRect(x: canvasWidth - 84, y: 6, width: 72, height: labelHeight - 4)
-bitmapContext.setFillColor(CGColor(red: 0.08, green: 0.08, blue: 0.08, alpha: 0.92))
-let labelPath = CGPath(
-    roundedRect: labelRect,
-    cornerWidth: 6,
-    cornerHeight: 6,
-    transform: nil
-)
-bitmapContext.addPath(labelPath)
-bitmapContext.fillPath()
-
-let attributes: [NSAttributedString.Key: Any] = [
-    NSAttributedString.Key(rawValue: kCTFontAttributeName as String):
-        CTFontCreateWithName("Helvetica-Bold" as CFString, labelFontSize, nil),
-    NSAttributedString.Key(rawValue: kCTForegroundColorAttributeName as String):
-        CGColor(red: 1, green: 1, blue: 1, alpha: 1)
-]
-
-let attributedString = NSAttributedString(string: label, attributes: attributes)
-let line = CTLineCreateWithAttributedString(attributedString)
-let bounds = CTLineGetBoundsWithOptions(line, [])
-let textX = labelRect.midX - bounds.width / 2
-let textY = labelRect.midY - bounds.height / 2
-
-bitmapContext.textPosition = CGPoint(x: textX, y: textY)
-CTLineDraw(line, bitmapContext)
-
-guard let finalImage = bitmapContext.makeImage() else {
+guard let finalImage = CGImage(
+    width: canvasWidth,
+    height: canvasHeight,
+    bitsPerComponent: 8,
+    bitsPerPixel: 32,
+    bytesPerRow: canvasWidth * 4,
+    space: colorSpace,
+    bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue),
+    provider: finalProvider,
+    decode: nil,
+    shouldInterpolate: false,
+    intent: .defaultIntent
+) else {
     fputs("Falha a criar a imagem final do QR code.\n", stderr)
     exit(1)
 }
