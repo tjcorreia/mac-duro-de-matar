@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-PT"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mac, Duro de Matar</title>
+    <style>
+      :root {
+        --bg: #080b16;
+        --panel: rgba(8, 13, 30, 0.84);
+        --gold: #ffca45;
+        --orange: #ff6a2b;
+        --red: #ff2b3a;
+        --ice: #dff6ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Trebuchet MS", Verdana, Arial, sans-serif;
+        color: var(--ice);
+        background:
+          radial-gradient(circle at top, rgba(255, 106, 43, 0.28), transparent 28%),
+          radial-gradient(circle at bottom, rgba(255, 43, 58, 0.18), transparent 35%),
+          linear-gradient(180deg, #0d1020 0%, #090b14 40%, #040509 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)),
+          repeating-linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.03) 0,
+            rgba(255, 255, 255, 0.03) 2px,
+            transparent 2px,
+            transparent 6px
+          );
+        mix-blend-mode: screen;
+        opacity: 0.45;
+      }
+
+      .wrap {
+        width: min(1120px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 24px 0 52px;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        padding: 8px 14px;
+        border: 2px solid rgba(255, 202, 69, 0.5);
+        background: rgba(255, 202, 69, 0.08);
+        color: var(--gold);
+        font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 28px;
+        align-items: center;
+        margin-top: 18px;
+      }
+
+      .copy {
+        padding: 26px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: var(--panel);
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+      }
+
+      h1 {
+        margin: 16px 0 10px;
+        font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+        font-size: clamp(3rem, 9vw, 6.5rem);
+        line-height: 0.9;
+        text-transform: uppercase;
+        color: #fff8dc;
+        letter-spacing: 0.03em;
+        text-shadow:
+          0 2px 0 rgba(0, 0, 0, 0.6),
+          0 0 18px rgba(255, 106, 43, 0.35),
+          0 0 42px rgba(255, 43, 58, 0.28);
+      }
+
+      .tagline {
+        margin: 0;
+        max-width: 32rem;
+        color: #ffdca8;
+        font-size: clamp(1.05rem, 2vw, 1.3rem);
+        line-height: 1.45;
+        font-weight: 700;
+      }
+
+      .credits {
+        margin-top: 18px;
+        color: rgba(223, 246, 255, 0.72);
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 0.08em;
+      }
+
+      .poster {
+        position: relative;
+        padding: 14px;
+        border: 2px solid rgba(255, 202, 69, 0.45);
+        background:
+          linear-gradient(180deg, rgba(255, 202, 69, 0.08), rgba(255, 43, 58, 0.12)),
+          rgba(4, 5, 9, 0.72);
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.06),
+          0 24px 60px rgba(0, 0, 0, 0.45);
+      }
+
+      .poster::before {
+        content: "Explosivo. Implacável. Ricardo Maçarico.";
+        position: absolute;
+        top: -14px;
+        left: 16px;
+        padding: 4px 10px;
+        background: linear-gradient(90deg, var(--red), var(--orange));
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .poster video {
+        display: block;
+        width: 100%;
+        aspect-ratio: 4 / 5;
+        object-fit: cover;
+        background: #020305;
+        filter: contrast(1.08) saturate(1.04);
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 24px;
+      }
+
+      .stat {
+        padding: 16px;
+        border-left: 4px solid var(--orange);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .stat strong {
+        display: block;
+        color: var(--gold);
+        font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+        font-size: 1.35rem;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+      }
+
+      .section-title {
+        margin: 34px 0 14px;
+        color: var(--gold);
+        font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .quotes {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .quote {
+        padding: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(12, 17, 36, 0.78);
+        box-shadow: 0 18px 35px rgba(0, 0, 0, 0.28);
+      }
+
+      .quote p {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+
+      .quote span {
+        display: block;
+        margin-top: 12px;
+        color: #ffb676;
+        text-transform: uppercase;
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+      }
+
+      .footer-bar {
+        margin-top: 28px;
+        padding: 14px 18px;
+        text-align: center;
+        color: #fff4cd;
+        background: linear-gradient(90deg, rgba(255, 43, 58, 0.16), rgba(255, 106, 43, 0.18));
+        border: 1px solid rgba(255, 202, 69, 0.28);
+        font-weight: 700;
+      }
+
+      @media (max-width: 860px) {
+        .hero,
+        .quotes,
+        .stats {
+          grid-template-columns: 1fr;
+        }
+
+        .wrap {
+          width: min(100% - 18px, 1120px);
+          padding: 16px 0 36px;
+        }
+
+        .copy {
+          padding: 18px;
+        }
+
+        .poster::before {
+          left: 10px;
+          right: 10px;
+          text-align: center;
+        }
+
+        .poster video {
+          aspect-ratio: 16 / 16;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      
+
+      <section class="hero">
+        <div class="copy">
+          
+          <h1>Mac, Duro</h1>
+          <p class="tagline">
+            Quando o caos aparece, o Ricardo Maçarico não foge.
+          </p>
+          
+
+          <div class="stats">
+            <div class="stat">
+              <strong>0% medo</strong>
+              O perigo costuma atravessar a rua quando o Mac se aproxima.
+            </div>
+            
+            <div class="stat">
+              <strong>1 aviso</strong>
+              Normalmente, basta um olhar para a situação se resolver.
+            </div>
+          </div>
+        </div>
+
+        <div class="poster">
+          <video autoplay="" muted="" loop="" playsinline="" preload="auto">
+            <source src="assets/ricardo-macarico.mp4" type="video/mp4">
+          </video>
+        </div>
+      </section>
+
+      <h2 class="section-title">Mac Factos</h2>
+      <section class="quotes">
+        <article class="quote">
+          <p>O Mac uma vez disse a uma mulher para ela se acalmar. E ela acalmou-se.</p>
+          
+        </article>
+        
+        <article class="quote">
+          <p>Quando Mac faz flexões, ele não se coloca para cima, ele empurra a Terra para baixo</p>
+          
+        </article>
+        
+        
+        <article class="quote">
+          <p>Mac consegue bater palmas só com uma mão</p>
+          
+        </article>
+      </section>
+
+      <div class="footer-bar">
+        Classificação: M/18 Nos cinemas a 30 de Março 
+      </div>
+    </main>
+  <!-- Code injected by live-server -->
+<script>
+  // <![CDATA[  <-- For SVG support
+  if ('WebSocket' in window) {
+    (function () {
+      function refreshCSS() {
+        var sheets = [].slice.call(document.getElementsByTagName("link"));
+        var head = document.getElementsByTagName("head")[0];
+        for (var i = 0; i < sheets.length; ++i) {
+          var elem = sheets[i];
+          var parent = elem.parentElement || head;
+          parent.removeChild(elem);
+          var rel = elem.rel;
+          if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+            var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+            elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+          }
+          parent.appendChild(elem);
+        }
+      }
+      var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+      var address = protocol + window.location.host + window.location.pathname + '/ws';
+      var socket = new WebSocket(address);
+      socket.onmessage = function (msg) {
+        if (msg.data == 'reload') window.location.reload();
+        else if (msg.data == 'refreshcss') refreshCSS();
+      };
+      if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+        console.log('Live reload enabled.');
+        sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+      }
+    })();
+  }
+  else {
+    console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+  }
+  // ]]>
+</script>
+
+
+</body></html>
